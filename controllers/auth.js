@@ -1,0 +1,1 @@
+//Functies die hier moeten komen: signup, login, logout, changePassword, deleteAccount, updateAccount
