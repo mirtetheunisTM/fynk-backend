@@ -10,3 +10,5 @@ mark task as completed: router.put(/:id/complete, tasksController.completeTask);
 delete task: router.delete(/:id, tasksController.deleteTask);
 get tasks by status: router.get(/status/:status, tasksController.getTasksByStatus);
 get all sessions task is linked to: router.get(/:id/sessions, tasksController.getSessions); */
+
+module.exports = router;

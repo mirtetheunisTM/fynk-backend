@@ -11,3 +11,5 @@ get last session: router.get(/last, sessionsController.getLastSession); */
 /* link task to session: router.post(/:id/task/:taskId, sessionsController.linkTask);
 unlink task from session: router.delete(/:id/task/:taskId, sessionsController.unlinkTask);
 all tasks linked to session: router.get(/:id/tasks, sessionsController.getTasks); */
+
+module.exports = router;
