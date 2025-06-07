@@ -53,8 +53,14 @@ const login = async (req, res) => {
      });
 }
 
+// /auth/logout
+const logout = (req, res) => {
+    // In a real application, you would invalidate the token here
+    res.status(200).json({ message: 'Logout successful' });
+}
+
 module.exports = {
     signup,
     login,
-    
+    logout
 };
