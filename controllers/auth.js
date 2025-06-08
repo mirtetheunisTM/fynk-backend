@@ -133,6 +133,34 @@ const updateAccount = async (req, res) => {
     }
 };
 
+// Get a user by ID
+const getUserById = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const user = await userModel.getUserById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json({ message: 'User retrieved successfully', data: user });
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving user', error: error.message });
+    }
+};
+
+// Get a user by email
+const getUserByEmail = async (req, res) => {
+    try {
+        const email = req.params.email;
+        const user = await userModel.getUserByEmail(email);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json({ message: 'User retrieved successfully', data: user });
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving user', error: error.message });
+    }
+};
+
 
 module.exports = {
     signup,
@@ -140,5 +168,7 @@ module.exports = {
     logout,
     changePassword,
     deleteAccount,
-    updateAccount
+    updateAccount,
+    getUserById,
+    getUserByEmail
 };

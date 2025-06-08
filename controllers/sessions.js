@@ -119,6 +119,7 @@ const getTasks = async (req, res) => {
         res.status(500).json({ message: 'Error retrieving tasks', error: error.message });
     }
 }
+
 module.exports = {
     getSessions,
     getSession,
