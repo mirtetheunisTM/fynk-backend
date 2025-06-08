@@ -17,10 +17,4 @@ router.post('/changePassword', authMiddleware, authController.changePassword);
 router.delete('/deleteAccount', authMiddleware, authController.deleteAccount);
 router.put('/updateAccount', authMiddleware, authController.updateAccount);
 
-
-/*router.post('/logout', passport.authenticate('jwt', { session: false }), authController.logout);
-router.post('/changePassword', passport.authenticate('jwt', { session: false }), authController.changePassword);
-router.delete('/deleteAccount', passport.authenticate('jwt', { session: false }), authController.deleteAccount);
-router.put('/updateAccount', passport.authenticate('jwt', { session: false }), authController.updateAccount);*/
-
 module.exports = router;
