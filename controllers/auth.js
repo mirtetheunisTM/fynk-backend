@@ -85,10 +85,27 @@ const changePassword = async (req, res) => {
     res.status(200).json({ message: 'Password changed successfully' });
 }
 
+// auth/deleteAccount
+const deleteAccount = async (req, res) => {
+    // This function would remove the user from the database
+    // For now, we will remove the user from the in-memory array
+    const userIndex = users.findIndex(user => user.email === req.user.email);
+    if (userIndex === -1) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+    // Remove user from the array
+    // replace with database logic later
+    users.splice(userIndex, 1);
+    res.status(200).json({ message: 'Account deleted successfully' });
+
+    
+}
+
 
 module.exports = {
     signup,
     login,
     logout,
-    changePassword
+    changePassword,
+    deleteAccount
 };
