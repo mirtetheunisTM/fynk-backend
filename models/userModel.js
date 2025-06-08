@@ -39,10 +39,26 @@ const deleteUserById = async (id) => {
   return deletedUser[0];
 };
 
+// GET request to fetch all users
+const getAllUsers = async () => {
+  return users;
+};
+// GET request to fetch a user by ID
+const getUserById = async (id) => {
+  return users.find(u => u.id === id);
+};
+// GET request to fetch a user by email
+const getUserByEmail = async (email) => {
+  return users.find(u => u.email === email);
+};
+
 module.exports = {
   createUser,
   findUserByEmail,
   findUserById,
   updateUserById,
   deleteUserById,
+  getAllUsers,
+  getUserById,
+  getUserByEmail
 };
