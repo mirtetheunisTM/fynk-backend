@@ -11,6 +11,11 @@ router.get('/', function(req, res, next) {
 router.post('/signup', authController.signup);
 router.post('/login', authController.login);
 router.post('/logout', authController.logout);
+
+// The following routes are protected by JWT authentication
+router.post('/changePassword', authMiddleware, authController.changePassword);
+
+
 /*router.post('/logout', passport.authenticate('jwt', { session: false }), authController.logout);
 router.post('/changePassword', passport.authenticate('jwt', { session: false }), authController.changePassword);
 router.delete('/deleteAccount', passport.authenticate('jwt', { session: false }), authController.deleteAccount);

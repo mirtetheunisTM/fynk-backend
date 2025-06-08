@@ -60,8 +60,35 @@ const logout = (req, res) => {
     res.status(200).json({ message: 'Logout successful' });
 }
 
+// These functions require authentication middleware to be implemented
+// auth/changePassword
+const changePassword = async (req, res) => {
+    // Our flow in frontend:
+    // 1. User clicks "Change Password"
+    // 2. User enters current password, new password, and confirms new password
+    // 3. User submits the form
+    // 4. Backend verifies current password, hashes new password, and updates it in the database
+    const { currentPassword, newPassword } = req.body;
+    const user = users.find(user => user.id === req.user.userId); // Assuming req.user is set by auth middleware
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+        return res.status(401).json({ message: 'Current password is incorrect' });
+    }
+    if (!newPassword || newPassword.length < 6) {
+        return res.status(400).json({ message: 'New password must be at least 6 characters long' });
+    }
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedNewPassword;
+    res.status(200).json({ message: 'Password changed successfully' });
+}
+
+
 module.exports = {
     signup,
     login,
-    logout
+    logout,
+    changePassword
 };
