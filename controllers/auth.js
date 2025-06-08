@@ -3,31 +3,34 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const users = []; // This should be replaced with a database in a real application
+// userModel
+const userModel = require('../models/userModel');
 
 // /auth/signup
 const signup = async (req, res) => {
     const { name, email, password } = req.body;
+
     if (!name || !password || !email) {
         return res.status(400).json({ message: 'Name, email, and password are required' });
     }
 
-    const existingUser = users.find(user => user.email === email);
+    const existingUser = await userModel.findUserByEmail(email);
     if (existingUser) {
         return res.status(400).json({ message: 'User already exists' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = { name, email, password: hashedPassword };
-    users.push(newUser);
-
+    
+    const savedUser = await userModel.createUser(newUser);
     res.status(201).json({ 
         message: 'User created successfully',
         data: {
-            email: newUser.email,
-            name: newUser.name
+            email: savedUser.email,
+            name: savedUser.name
         }
-     });
+    });
+
 }
 
 // auth/login
@@ -37,7 +40,7 @@ const login = async (req, res) => {
         return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const user = users.find(user => user.email === email);
+    const user = await userModel.findUserByEmail(email);
     if (!user) {
         return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -47,7 +50,7 @@ const login = async (req, res) => {
         return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
     res.status(200).json({ 
         message: 'Login successful',
         token
@@ -69,7 +72,8 @@ const changePassword = async (req, res) => {
     // 3. User submits the form
     // 4. Backend verifies current password, hashes new password, and updates it in the database
     const { currentPassword, newPassword } = req.body;
-    const user = users.find(user => user.id === req.user.userId); // Assuming req.user is set by auth middleware
+    
+    const user = await userModel.findUserByEmail(req.user.email);
     if (!user) {
         return res.status(404).json({ message: 'User not found' });
     }
@@ -87,19 +91,47 @@ const changePassword = async (req, res) => {
 
 // auth/deleteAccount
 const deleteAccount = async (req, res) => {
-    // This function would remove the user from the database
-    // For now, we will remove the user from the in-memory array
-    const userIndex = users.findIndex(user => user.email === req.user.email);
-    if (userIndex === -1) {
-        return res.status(404).json({ message: 'User not found' });
+    try {
+        // Remove user from the database using userModel
+        const deleted = await userModel.deleteUserById(req.user.id);
+        if (!deleted) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json({ message: 'Account deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Error deleting account' });
     }
-    // Remove user from the array
-    // replace with database logic later
-    users.splice(userIndex, 1);
-    res.status(200).json({ message: 'Account deleted successfully' });
-
-    
 }
+
+// auth/updateAccount
+const updateAccount = async (req, res) => {
+    const { name, email } = req.body;
+    try {
+        // Check if user exists
+        const user = await userModel.findUserById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        // If email is being changed, check for conflicts
+        if (email && email !== user.email) {
+            const existingUser = await userModel.findUserByEmail(email);
+            if (existingUser) {
+                return res.status(400).json({ message: 'Email already in use' });
+            }
+        }
+        // Update user in the database
+        const updatedUser = await userModel.updateUserById(req.user.id, { name, email });
+        res.status(200).json({
+            message: 'Account updated successfully',
+            data: {
+                email: updatedUser.email,
+                name: updatedUser.name
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ message: 'Error updating account' });
+    }
+};
 
 
 module.exports = {
@@ -107,5 +139,6 @@ module.exports = {
     login,
     logout,
     changePassword,
-    deleteAccount
+    deleteAccount,
+    updateAccount
 };

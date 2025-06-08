@@ -14,7 +14,8 @@ router.post('/logout', authController.logout);
 
 // The following routes are protected by JWT authentication
 router.post('/changePassword', authMiddleware, authController.changePassword);
-router.post('/deleteAccount', authMiddleware, authController.deleteAccount);
+router.delete('/deleteAccount', authMiddleware, authController.deleteAccount);
+router.put('/updateAccount', authMiddleware, authController.updateAccount);
 
 
 /*router.post('/logout', passport.authenticate('jwt', { session: false }), authController.logout);
