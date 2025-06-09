@@ -50,7 +50,7 @@ const login = async (req, res) => {
         return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.user_id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
     res.status(200).json({ 
         message: 'Login successful',
         token
@@ -86,6 +86,12 @@ const changePassword = async (req, res) => {
     }
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedNewPassword;
+
+    // Update the user's password in the database
+    const updatedUser = await userModel.updateUserById(user.user_id, { password: hashedNewPassword });
+    if (!updatedUser) {
+        return res.status(500).json({ message: 'Error updating password' });
+    }
     res.status(200).json({ message: 'Password changed successfully' });
 }
 

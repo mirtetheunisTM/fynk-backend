@@ -49,36 +49,58 @@ const findUserById = async (id) => {
   return result.rows.length > 0 ? result.rows[0] : null;
 };
 
+// TO DO: Implement Database operations for update and delete
 // updateUser
 const updateUserById = async (id, updates) => {
-  // Find user by ID
-  if (!user) return null;
+  // Prepare the update query
+  const fields = [];
+  const values = [];
+  let index = 1;
 
-  Object.assign(user, updates);
-  return user;
+  if (updates.name) {
+    fields.push(`name = $${index++}`);
+    values.push(updates.name);
+  }
+  if (updates.email) {
+    fields.push(`email = $${index++}`);
+    values.push(updates.email);
+  }
+  if (updates.password) {
+    fields.push(`password = $${index++}`);
+    values.push(updates.password);
+  }
+
+  if (fields.length === 0) {
+    throw new Error('No updates provided');
+  }
+
+  // Add the user ID to the values
+  values.push(id);
+
+  // Execute the update query
+  const query = `UPDATE "User" SET ${fields.join(', ')} WHERE user_id = $${index} RETURNING *;`;
+  const result = await db.query(query, values);
+
+  return result.rows[0]; // Return the updated user
 };
 
 // deleteUser
 const deleteUserById = async (id) => {
-  const index = users.findIndex(u => u.id === id);
-  if (index === -1) return null;
-
-  const deletedUser = users.splice(index, 1);
-  return deletedUser[0];
+  // Delete the user from the database
+  const query = 'DELETE FROM "User" WHERE user_id = $1 RETURNING *;';
+  const values = [id];
+  const result = await db.query(query, values);
+  if (result.rows.length === 0) {
+    throw new Error('User not found or deletion failed');
+  }
+  return result.rows[0]; // Return the deleted user
 };
 
 // GET request to fetch all users
 const getAllUsers = async () => {
   return users;
 };
-// GET request to fetch a user by ID
-const getUserById = async (id) => {
-  return users.find(u => u.id === id);
-};
-// GET request to fetch a user by email
-const getUserByEmail = async (email) => {
-  return users.find(u => u.email === email);
-};
+
 
 module.exports = {
   createUser,
@@ -87,6 +109,5 @@ module.exports = {
   updateUserById,
   deleteUserById,
   getAllUsers,
-  getUserById,
-  getUserByEmail
+  
 };
