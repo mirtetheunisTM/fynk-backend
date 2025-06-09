@@ -28,6 +28,9 @@ router.post('/', authMiddleware, sessionsController.createSession);
 // Update an existing session
 router.put('/:id', authMiddleware, sessionsController.updateSession);
 
+// Finish a session
+router.post('/:id/finish', authMiddleware, sessionsController.finishSession);
+
 // Link a task to a session
 router.post('/:id/task/:taskId', authMiddleware, sessionsController.linkTask);
 

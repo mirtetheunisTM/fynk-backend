@@ -1,5 +1,6 @@
 //Functies voor: getSessions, getSession, createSession, updateSession, getLastSession, linkTask, unlinkTask, getTasks
 const sessionModel = require('../models/sessionModel');
+const db = require('../config/db'); // Add this at the top
 
 // Get all sessions for user
 // GET /sessions
@@ -17,8 +18,8 @@ const getSessions = async (req, res) => {
 // GET /sessions/:id
 const getSession = async (req, res) => {
     try {
-        const sessionId = req.params.id;
-        const session = await sessionModel.getSessionById(sessionId);
+        const session_id = req.params.id;
+        const session = await sessionModel.getSessionById(session_id);
         if (!session) {
             return res.status(404).json({ message: 'Session not found' });
         }
@@ -32,8 +33,8 @@ const getSession = async (req, res) => {
 // GET /sessions/last
 const getLastSession = async (req, res) => {
     try {
-        const userId = req.user.id; // Assuming user ID is stored in req.user
-        const lastSession = await sessionModel.getLastSessionByUserId(userId);
+        const user_id = req.user.id; // Assuming user ID is stored in req.user
+        const lastSession = await sessionModel.getLastSessionByUserId(user_id);
         if (!lastSession) {
             return res.status(404).json({ message: 'No sessions found for this user' });
         }
@@ -54,9 +55,44 @@ const createSession = async (req, res) => {
         }
         const sessionData = { start_time, user_id, focus_mode_id };
         const newSession = await sessionModel.createSession(sessionData);
+        // Set user status to active directly to avoid circular dependency and function errors
+        await db.query('UPDATE "User" SET is_active = true WHERE user_id = $1', [user_id]);
         res.status(201).json({ message: 'Session created successfully', data: newSession });
     } catch (error) {
         res.status(500).json({ message: 'Error creating session', error: error.message });
+    }
+};
+
+// Finish an existing session
+// POST /sessions/:id/finish
+const finishSession = async (req, res) => {
+    try {
+        const session_id = req.params.id;
+        const { end_time, successful, rating } = req.body;
+
+        // Haal de sessie op om start_time te weten (voor duration)
+        const session = await sessionModel.getSessionById(session_id);
+        if (!session) {
+            return res.status(404).json({ message: 'Session not found' });
+        }
+
+        // Bepaal end_time en duration
+        const endTime = end_time ? new Date(end_time) : new Date();
+        const startTime = new Date(session.start_time);
+        const duration = Math.round((endTime - startTime) / 60000); // in minuten
+
+        // Update de sessie
+        const updates = {
+            end_time: endTime,
+            duration,
+            successful,
+            rating
+        };
+        const updatedSession = await sessionModel.updateSessionById(session_id, updates);
+
+        res.status(200).json({ message: 'Session finished successfully', data: updatedSession });
+    } catch (error) {
+        res.status(500).json({ message: 'Error finishing session', error: error.message });
     }
 };
 
@@ -143,6 +179,7 @@ module.exports = {
     getSessions,
     getSession,
     createSession,
+    finishSession,
     updateSession,
     getLastSession,
     linkTask,

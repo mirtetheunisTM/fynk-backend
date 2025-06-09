@@ -4,6 +4,7 @@ const users = [];
 
 // Database connectie
 const db = require('../config/db');
+const { get } = require('../routes/sessions');
 
 // signup
 const createUser = async (user) => {
@@ -49,7 +50,7 @@ const findUserById = async (id) => {
   return result.rows.length > 0 ? result.rows[0] : null;
 };
 
-// TO DO: Implement Database operations for update and delete
+
 // updateUser
 const updateUserById = async (id, updates) => {
   // Prepare the update query
@@ -98,9 +99,15 @@ const deleteUserById = async (id) => {
 
 // GET request to fetch all users
 const getAllUsers = async () => {
-  return users;
+  const result = await db.query('SELECT * FROM "User";');
+  return result.rows;
 };
 
+// get all active users
+const getActiveUsers = async () => {
+    const result = await db.query('SELECT * FROM "User" WHERE is_active = true;');
+    return result.rows;
+};
 
 module.exports = {
   createUser,
@@ -109,5 +116,5 @@ module.exports = {
   updateUserById,
   deleteUserById,
   getAllUsers,
-  
+  getActiveUsers
 };

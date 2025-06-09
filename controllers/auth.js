@@ -167,6 +167,16 @@ const getUserByEmail = async (req, res) => {
     }
 };
 
+// get active users
+const getActiveUsers = async (req, res) => {
+    try {
+        const activeUsers = await userModel.getActiveUsers();
+        res.status(200).json({ message: 'Active users retrieved successfully', data: activeUsers });
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving active users', error: error.message });
+    }
+};
+
 
 module.exports = {
     signup,
@@ -176,5 +186,6 @@ module.exports = {
     deleteAccount,
     updateAccount,
     getUserById,
-    getUserByEmail
+    getUserByEmail,
+    getActiveUsers
 };

@@ -26,12 +26,25 @@ const createSession = async (session) => {
 
 // Get all sessions for a user
 const getSessionsByUserId = async (userId) => {
-    return sessions.filter(s => s.userId === userId);
+    const query = `
+        SELECT * FROM "FocusSession"
+        WHERE user_id = $1
+        ORDER BY start_time DESC;
+    `;
+    const values = [userId];
+    const result = await db.query(query, values);
+    return result.rows; // Returns an array of sessions for the user
 };
 
 // Get a single session by ID
 const getSessionById = async (id) => {
-    return sessions.find(s => s.id === id);
+    const query = `
+        SELECT * FROM "FocusSession"
+        WHERE session_id = $1;
+    `;
+    const values = [id];
+    const result = await db.query(query, values);
+    return result.rows[0] || null; // Returns the session or null if not found
 };
 
 // Get the last session for a user
@@ -44,10 +57,21 @@ const getLastSessionByUserId = async (userId) => {
 
 // Update a session by ID
 const updateSessionById = async (id, updates) => {
-    const session = sessions.find(s => s.id === id);
-    if (!session) return null;
-    Object.assign(session, updates);
-    return session;
+    const fields = [];
+    const values = [];
+    let idx = 1;
+    for (const key in updates) {
+        fields.push(`"${key}" = $${idx++}`);
+        values.push(updates[key]);
+    }
+    values.push(id);
+    const query = `
+        UPDATE "FocusSession" SET ${fields.join(', ')}
+        WHERE session_id = $${idx}
+        RETURNING *;
+    `;
+    const result = await db.query(query, values);
+    return result.rows[0] || null;
 };
 
 // Link a task to a session
