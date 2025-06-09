@@ -47,14 +47,18 @@ const getLastSession = async (req, res) => {
 // POST /sessions
 const createSession = async (req, res) => {
     try {
-        const userId = req.user.id; // Assuming user ID is stored in req.user
-        const sessionData = { ...req.body, userId }; // Include user ID in session data
+        const user_id = req.user.user_id || req.user.id; // JWT kan user_id of id bevatten
+        const { start_time, focus_mode_id } = req.body;
+        if (!start_time || !focus_mode_id) {
+            return res.status(400).json({ message: 'start_time and focus_mode_id are required' });
+        }
+        const sessionData = { start_time, user_id, focus_mode_id };
         const newSession = await sessionModel.createSession(sessionData);
         res.status(201).json({ message: 'Session created successfully', data: newSession });
     } catch (error) {
         res.status(500).json({ message: 'Error creating session', error: error.message });
     }
-}
+};
 
 // Update an existing session
 // PUT /sessions/:id
@@ -72,7 +76,6 @@ const updateSession = async (req, res) => {
     }
 }
 
-// TO CHECK ONCE TASKS ARE IMPLEMENTED
 // Link a task to a session
 // POST /sessions/:id/task/:taskId
 const linkTask = async (req, res) => {
@@ -88,6 +91,22 @@ const linkTask = async (req, res) => {
         res.status(500).json({ message: 'Error linking task to session', error: error.message });
     }
 }
+
+// link multiple tasks to a session
+// POST /sessions/:id/tasks
+    const linkTasksBatch = async (req, res) => {
+        try {
+            const sessionId = req.params.id;
+            const { taskIds } = req.body;
+            if (!Array.isArray(taskIds) || taskIds.length === 0) {
+                return res.status(400).json({ message: 'No tasks provided' });
+            }
+            const results = await sessionModel.linkMultipleTasksToSession(sessionId, taskIds);
+            res.status(200).json({ message: 'Tasks linked to session successfully', data: results });
+        } catch (error) {
+            res.status(500).json({ message: 'Error linking tasks to session', error: error.message });
+        }
+    };
 
 // Unlink a task from a session
 // DELETE /sessions/:id/task/:taskId
@@ -127,6 +146,7 @@ module.exports = {
     updateSession,
     getLastSession,
     linkTask,
+    linkTasksBatch,
     unlinkTask,
     getTasks
 };

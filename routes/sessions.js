@@ -31,6 +31,9 @@ router.put('/:id', authMiddleware, sessionsController.updateSession);
 // Link a task to a session
 router.post('/:id/task/:taskId', authMiddleware, sessionsController.linkTask);
 
+// Link multiple tasks to a session
+router.post('/:id/tasks', authMiddleware, sessionsController.linkTasksBatch);
+
 // Unlink a task from a session
 router.delete('/:id/task/:taskId', authMiddleware, sessionsController.unlinkTask);
 
