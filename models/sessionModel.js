@@ -49,10 +49,15 @@ const getSessionById = async (id) => {
 
 // Get the last session for a user
 const getLastSessionByUserId = async (userId) => {
-    const userSessions = sessions.filter(s => s.userId === userId);
-    if (userSessions.length === 0) return null;
-    // Assuming sessions are created in order, last one is the most recent
-    return userSessions[userSessions.length - 1];
+    const query = `
+        SELECT * FROM "FocusSession"
+        WHERE user_id = $1
+        ORDER BY start_time DESC
+        LIMIT 1;
+    `;
+    const values = [userId];
+    const result = await db.query(query, values);
+    return result.rows[0] || null; // Returns the last session or null if not found
 };
 
 // Update a session by ID
