@@ -31,8 +31,8 @@ function categorizeTask(importance, deadline) {
 const createTask = async (taskData) => {
     // add task in database
     const query = `
-        INSERT INTO "Task" (user_id, title, description, importance, due_date, status, category_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO "Task" (user_id, title, description, importance, due_date, status, category_id, urgency_type)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING *;
     `;
     const values = [
@@ -42,7 +42,9 @@ const createTask = async (taskData) => {
         taskData.importance, // importance is now a number (1-4)
         taskData.dueDate, // make sure this matches your DB column name
         'todo', // Default status
-        taskData.categoryId // pass the category_id (foreign key)
+        taskData.categoryId, // pass the category_id (foreign key)
+        // If you want to categorize the task based on importance and due date, you can do it here
+        categorizeTask(taskData.importance, taskData.dueDate)
     ];
 
     const result = await db.query(query, values);
