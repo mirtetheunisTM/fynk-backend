@@ -5,6 +5,11 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const env = require('dotenv').config();
 
+// cors
+// later updaten met specifieke frontend URL
+const cors = require('cors');
+app.use(cors());
+
 const indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
 const sessionsRouter = require('./routes/sessions');
