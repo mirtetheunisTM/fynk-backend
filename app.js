@@ -14,6 +14,7 @@ const authRouter = require('./routes/auth');
 const sessionsRouter = require('./routes/sessions');
 const tasksRouter = require('./routes/tasks');
 const focusModesRouter = require('./routes/focusModes');
+const categoriesRouter = require('./routes/categories');
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use('/auth', authRouter);
 app.use('/sessions', sessionsRouter);
 app.use('/tasks', tasksRouter);
 app.use('/focusModes', focusModesRouter);
+app.use('/categories', categoriesRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
