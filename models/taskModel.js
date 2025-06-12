@@ -140,7 +140,7 @@ const updateTask = async (id, updates) => {
 const completeTask = async (id) => {
     const query = `
         UPDATE "Task"
-        SET status = 'completed'
+        SET status = 'done'
         WHERE task_id = $1
         RETURNING *;
     `;
