@@ -1,5 +1,4 @@
 const db = require ('../config/db');
-const { get } = require('../routes');
 
 // Get all friend user_ids for a user (bidirectional, only accepted)
 const getFriendUserIds = async (userId) => {
@@ -33,8 +32,7 @@ const sendFriendRequest = async (userId, friendId) => {
 const getIncomingFriendRequests = async (userId) => {
     const query = `
         SELECT * FROM "Friendship"
-        WHERE friend_user_id = $1 AND status = 'pending'
-        ORDER BY request_time DESC;
+        WHERE friend_user_id = $1 AND status = 'pending';
     `;
     const values = [userId];
     const result = await db.query(query, values);
@@ -67,6 +65,23 @@ const rejectFriendRequest = async (requestId) => {
     return result.rows[0]; // Returns the updated friend request
 };
 
+// remove a friend
+const removeFriend = async (userId, friendId) => {
+    const query = `
+        DELETE FROM "Friendship"
+        WHERE 
+            (
+                (user_id = $1 AND friend_user_id = $2)
+                OR
+                (user_id = $2 AND friend_user_id = $1)
+            )
+            AND status = 'accepted'
+        RETURNING *;
+    `;
+    const values = [userId, friendId];
+    const result = await db.query(query, values);
+    return result.rows[0];
+};
 
 
 
@@ -76,5 +91,6 @@ module.exports = {
     sendFriendRequest,
     getIncomingFriendRequests,
     acceptFriendRequest,
-    rejectFriendRequest
+    rejectFriendRequest,
+    removeFriend
 };
