@@ -16,6 +16,7 @@ const tasksRouter = require('./routes/tasks');
 const focusModesRouter = require('./routes/focusModes');
 const categoriesRouter = require('./routes/categories');
 const friendsRouter = require('./routes/friends');
+const statsRouter = require('./routes/stats');
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use('/tasks', tasksRouter);
 app.use('/focusModes', focusModesRouter);
 app.use('/categories', categoriesRouter);
 app.use('/friends', friendsRouter);
+app.use('/stats', statsRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
