@@ -25,8 +25,8 @@ const getStatistics = async (req, res) => {
         res.status(200).json({
             message: 'Statistics retrieved successfully',
             data: {
-                longestStreak: longestStreak || 0,
-                currentStreak: currentStreak || 0,
+                longestStreak: Number(longestStreak) || 0, // Ensure it's a number
+                currentStreak: Number(currentStreak) || 0, // Ensure it's a number
                 topFocusMethod: topFocusMethod || null,
                 cheersGiven: cheersStats.cheers_given || 0,
                 cheersReceived: cheersStats.cheers_received || 0,
