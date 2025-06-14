@@ -86,6 +86,19 @@ const removeFriend = async (req, res) => {
     }
 }
 
+// search for friends
+const searchFriends = async (req, res) => {
+    try {
+        const { username } = req.body;
+        if (!username) {
+            return res.status(400).json({ message: 'Username is required' });
+        }
+        const friends = await friendsModel.searchFriendsByUsername(username);
+        res.status(200).json({ message: 'Friends retrieved successfully', data: friends });
+    } catch (error) {
+        res.status(500).json({ message: 'Error searching for friends', error: error.message });
+    }
+}
 
 module.exports = {
     getFriends,
@@ -93,6 +106,7 @@ module.exports = {
     getIncomingFriendRequests,
     acceptFriendRequest,
     rejectFriendRequest,
-    removeFriend
+    removeFriend,
+    searchFriends
 
 };

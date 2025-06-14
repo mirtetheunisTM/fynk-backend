@@ -21,4 +21,7 @@ router.post('/requests/:id/reject', authMiddleware, friendsController.rejectFrie
 // Remove a friend
 router.delete('/remove/:id', authMiddleware, friendsController.removeFriend);
 
+// search for friends
+router.post('/search', authMiddleware, friendsController.searchFriends);
+
 module.exports = router;

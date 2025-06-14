@@ -83,6 +83,17 @@ const removeFriend = async (userId, friendId) => {
     return result.rows[0];
 };
 
+// search for a user by username
+const searchFriendsByUsername = async (username) => {
+    const query = `
+        SELECT user_id, name, is_active
+        FROM "User"
+        WHERE name ILIKE $1;    
+    `;
+    const values = [`%${username}%`];
+    const result = await db.query(query, values);
+    return result.rows; // Returns an array of users matching the username
+};
 
 
 module.exports = {
@@ -92,5 +103,6 @@ module.exports = {
     getIncomingFriendRequests,
     acceptFriendRequest,
     rejectFriendRequest,
-    removeFriend
+    removeFriend,
+    searchFriendsByUsername
 };
