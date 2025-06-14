@@ -21,16 +21,20 @@ const signup = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = { name, email, password: hashedPassword };
-    
+
     const savedUser = await userModel.createUser(newUser);
+
+    // Generate a JWT token
+    const token = jwt.sign({ id: savedUser.user_id, email: savedUser.email }, JWT_SECRET, { expiresIn: '1h' });
+
     res.status(201).json({ 
         message: 'User created successfully',
         data: {
             email: savedUser.email,
-            name: savedUser.name
+            name: savedUser.name,
+            token: token
         }
     });
-
 }
 
 // auth/login

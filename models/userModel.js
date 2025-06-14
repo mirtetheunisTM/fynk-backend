@@ -26,6 +26,7 @@ const createUser = async (user) => {
         user.password,
         new Date() // created_at
     ];
+    
     const result = await db.query(query, values);
     if (result.rows.length === 0) {
         throw new Error('User creation failed');
