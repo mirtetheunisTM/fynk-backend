@@ -47,15 +47,16 @@ const getLongestStreak = async (userId) => {
 // Top focus method
 const getTopFocusMethod = async (userId) => {
     const query = `
-        SELECT focus_mode_id, COUNT(*) AS usage_count
-        FROM "FocusSession"
-        WHERE user_id = $1
-        GROUP BY focus_mode_id
+        SELECT fm.name AS focus_mode_name, COUNT(fs.focus_mode_id) AS usage_count
+        FROM "FocusSession" fs
+        JOIN "FocusMode" fm ON fs.focus_mode_id = fm.focus_mode_id
+        WHERE fs.user_id = $1
+        GROUP BY fm.name
         ORDER BY usage_count DESC
         LIMIT 1;
     `;
     const result = await db.query(query, [userId]);
-    return result.rows[0]?.focus_mode_id || null;
+    return result.rows[0]?.focus_mode_name || null; // Return the name of the focus mode
 };
 
 // Cheers given/received
