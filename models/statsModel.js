@@ -1,5 +1,30 @@
 const db = require('../config/db');
 
+// Update a specific field in the Stats table
+const updateStatsField = async (userId, field, value) => {
+    // Check if the user has a row in the Stats table
+    const checkQuery = `
+        SELECT 1 FROM "Stats" WHERE user_id = $1;
+    `;
+    const checkResult = await db.query(checkQuery, [userId]);
+
+    // If no row exists, create one
+    if (checkResult.rows.length === 0) {
+        const insertQuery = `
+            INSERT INTO "Stats" (user_id) VALUES ($1);
+        `;
+        await db.query(insertQuery, [userId]);
+    }
+
+    // Update the specific field
+    const updateQuery = `
+        UPDATE "Stats"
+        SET ${field} = $2
+        WHERE user_id = $1;
+    `;
+    await db.query(updateQuery, [userId, value]);
+};
+
 // Get the current streak of focus sessions for a user
 const getCurrentStreak = async (userId) => {
     const query = `
@@ -19,7 +44,9 @@ const getCurrentStreak = async (userId) => {
         SELECT current_streak FROM streak;
     `;
     const result = await db.query(query, [userId]);
-    return result.rows[0]?.current_streak || 0;
+    const currentStreak = result.rows[0]?.current_streak || 0;
+    await updateStatsField(userId, 'current_streak', currentStreak);
+    return currentStreak;
 };
 
 // Longest streak
@@ -41,10 +68,12 @@ const getLongestStreak = async (userId) => {
         SELECT MAX(streak_length) AS longest_streak FROM streaks;
     `;
     const result = await db.query(query, [userId]);
-    return result.rows[0]?.streak || 0;
+    const longestStreak = result.rows[0]?.streak || 0;
+    await updateStatsField(userId, 'longest_streak', longestStreak);
+    return longestStreak;
 };
 
-// Top focus method
+// Update the top focus method in the Stats table
 const getTopFocusMethod = async (userId) => {
     const query = `
         SELECT fm.name AS focus_mode_name, COUNT(fs.focus_mode_id) AS usage_count
@@ -56,7 +85,9 @@ const getTopFocusMethod = async (userId) => {
         LIMIT 1;
     `;
     const result = await db.query(query, [userId]);
-    return result.rows[0]?.focus_mode_name || null; // Return the name of the focus mode
+    const topFocusMethod = result.rows[0]?.focus_mode_name || null;
+    await updateStatsField(userId, 'top_focus_method', topFocusMethod);
+    return topFocusMethod;
 };
 
 // Cheers given/received
@@ -110,6 +141,28 @@ const getAverageFocusSession = async (userId) => {
     return result.rows[0]?.average_duration || 0;
 };
 
+// total time spent in focus sessions
+const getTotalFocusTime = async (userId) => {
+    const query = `
+        SELECT SUM(duration) AS total_duration
+        FROM "FocusSession"
+        WHERE user_id = $1;
+    `;
+    const result = await db.query(query, [userId]);
+    return result.rows[0]?.total_duration || 0;
+};
+
+// get amount of focus sessions completed
+const sessionsCompleted = async (userId) => {
+    const query = `
+        SELECT COUNT(*) AS sessions_completed
+        FROM "FocusSession"
+        WHERE user_id = $1;
+    `;
+    const result = await db.query(query, [userId]);
+    return result.rows[0]?.session_count || 0;
+};
+
 module.exports = {
     getCurrentStreak,
     getLongestStreak,
@@ -118,4 +171,7 @@ module.exports = {
     getBestFocusTime,
     getBestFocusDay,
     getAverageFocusSession,
+    getTotalFocusTime,
+    sessionsCompleted,
+    updateStatsField
 };
