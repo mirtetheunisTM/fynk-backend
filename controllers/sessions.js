@@ -80,8 +80,7 @@ const finishSession = async (req, res) => {
         // Bepaal end_time en duration
         const endTime = end_time ? new Date(end_time) : new Date();
         const startTime = new Date(session.start_time);
-        const duration = Math.round((endTime - startTime) / 60000); // in minuten
-
+        const duration = Math.ceil((endTime - startTime) / 60000); // in minutes
         // calculate xp earned
         const xpEarned = await sessionModel.calculateXPEarned(session_id);
 
