@@ -152,6 +152,8 @@ const getTotalFocusTime = async (userId) => {
     return result.rows[0]?.total_duration || 0;
 };
 
+// update sessions completed in Stats table
+
 // get amount of focus sessions completed
 const sessionsCompleted = async (userId) => {
     const query = `
@@ -163,6 +165,92 @@ const sessionsCompleted = async (userId) => {
     return result.rows[0]?.session_count || 0;
 };
 
+// Level and XP system
+// get current level
+const getCurrentLevel = async (userId) => {
+    const query = `
+        SELECT current_level FROM "Stats" WHERE user_id = $1;
+    `;
+    const result = await db.query(query, [userId]);
+    return result.rows[0]?.level || 1; // Default to level 1 if not found
+};
+
+// get current XP
+const getCurrentXP = async (userId) => {
+    const query = `
+        SELECT current_xp FROM "Stats" WHERE user_id = $1;
+    `;
+    const result = await db.query(query, [userId]);
+    return result.rows[0]?.xp || 0; // Default to 0 if not found
+};
+
+// get xp required for NEXT level
+const getNextLevelThreshold = (level) => {
+    // fetch from  LevelThresholds table
+    const query = `
+        SELECT xp_required FROM "LevelThresholds" WHERE level = $1;
+    `;
+    return db.query(query, [level])
+        .then(result => result.rows[0]?.xp_threshold || 0) // Default to 0 if not found
+        .catch(err => {
+            console.error('Error fetching next level threshold:', err);
+            return 0; // Default to 0 on error
+        });
+};
+
+// update the current level and XP in the Stats table
+const updateXPAndLevel = async (userId, xpEarned) => {
+    try {
+        // Ensure a row exists for the user in the Stats table
+        const initializeStatsQuery = `
+            INSERT INTO "Stats" (user_id, current_xp, current_level, total_focus_min, avg_session_duration, sessions_completed, longest_streak, current_streak, credits, last_updated)
+            VALUES ($1, 0, 1, 0, 0, 0, 0, 0, 0, CURRENT_TIMESTAMP)
+            ON CONFLICT (user_id) DO NOTHING;
+        `;
+        await db.query(initializeStatsQuery, [userId]);
+
+        // Update XP and increment sessions_completed in Stats table
+        const statsQuery = `
+            UPDATE "Stats"
+            SET 
+                current_xp = current_xp + $1,
+                sessions_completed = sessions_completed + 1
+            WHERE user_id = $2
+            RETURNING current_xp, current_level, sessions_completed;
+        `;
+        const statsResult = await db.query(statsQuery, [xpEarned, userId]);
+
+        if (statsResult.rows.length === 0) {
+            throw new Error('Failed to update stats for user');
+        }
+
+        const { current_xp, current_level } = statsResult.rows[0];
+
+        // Fetch XP threshold for the next level
+        const thresholdQuery = `
+            SELECT xp_required
+            FROM "LevelThresholds"
+            WHERE level = $1;
+        `;
+        const thresholdResult = await db.query(thresholdQuery, [current_level + 1]);
+        const nextLevelThreshold = thresholdResult.rows[0]?.xp_required;
+
+        // Check if user leveled up
+        if (nextLevelThreshold && current_xp >= nextLevelThreshold) {
+            const newLevel = current_level + 1;
+            await db.query(`
+                UPDATE "Stats"
+                SET current_level = $1
+                WHERE user_id = $2;
+            `, [newLevel, userId]);
+        }
+    } catch (error) {
+        console.error('Error updating XP and level:', error.message);
+        throw error;
+    }
+};
+
+
 module.exports = {
     getCurrentStreak,
     getLongestStreak,
@@ -173,5 +261,9 @@ module.exports = {
     getAverageFocusSession,
     getTotalFocusTime,
     sessionsCompleted,
-    updateStatsField
+    updateStatsField,
+    getCurrentLevel,
+    getCurrentXP,
+    getNextLevelThreshold,
+    updateXPAndLevel
 };

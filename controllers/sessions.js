@@ -1,5 +1,6 @@
 //Functies voor: getSessions, getSession, createSession, updateSession, getLastSession, linkTask, unlinkTask, getTasks
 const sessionModel = require('../models/sessionModel');
+const statsModel = require('../models/statsModel');
 const db = require('../config/db'); // Add this at the top
 
 // Get all sessions for user
@@ -81,14 +82,22 @@ const finishSession = async (req, res) => {
         const startTime = new Date(session.start_time);
         const duration = Math.round((endTime - startTime) / 60000); // in minuten
 
+        // calculate xp earned
+        const xpEarned = await sessionModel.calculateXPEarned(session_id);
+
         // Update de sessie
         const updates = {
             end_time: endTime,
             duration,
             successful,
-            rating
+            rating,
+            xp_earned: xpEarned
         };
         const updatedSession = await sessionModel.updateSessionById(session_id, updates);
+
+        // update user stats
+        const userId = req.user.id;
+        await statsModel.updateXPAndLevel(userId, xpEarned);
 
         res.status(200).json({ message: 'Session finished successfully', data: updatedSession });
     } catch (error) {

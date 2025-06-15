@@ -132,6 +132,34 @@ const getTasksBySessionId = async (sessionId) => {
     return result.rows; // Returns an array of tasks linked to the session
 };
 
+// XP logic
+// calculate XP earned based on session duration and focus mode
+const calculateXPEarned = async (sessionId) => {
+    try {
+        const query = `
+            SELECT fs.duration, fm.xp_multiplier
+            FROM "FocusSession" fs
+            JOIN "FocusMode" fm ON fs.focus_mode_id = fm.focus_mode_id
+            WHERE fs.session_id = $1;
+        `;
+        const result = await db.query(query, [sessionId]);
+        const session = result.rows[0];
+
+        if (!session) {
+            throw new Error('Session not found');
+        }
+
+        const { duration, xp_multiplier } = session;
+
+        // Calculate XP earned
+        const xpEarned = duration * xp_multiplier;
+
+        return xpEarned;
+    } catch (error) {
+        console.error('Error calculating XP:', error.message);
+        throw error;
+    }
+};
 module.exports = {
     createSession,
     getSessionsByUserId,
@@ -141,5 +169,6 @@ module.exports = {
     linkTaskToSession,
     linkMultipleTasksToSession,
     unlinkTaskFromSession,
-    getTasksBySessionId
+    getTasksBySessionId,
+    calculateXPEarned
 };
