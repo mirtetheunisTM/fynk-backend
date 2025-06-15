@@ -64,9 +64,47 @@ const getCurrentStreak = async (req, res) => {
 
 // Credits & Level system
 // TO DO: Implement a more complex system with levels, credits, and rewards
+// get current level
+const getCurrentLevel = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const currentLevel = await statsModel.getCurrentLevel(userId);
+        res.status(200).json({ message: 'Current level retrieved successfully', data: currentLevel });
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving current level', error: error.message });
+    }
+};
+
+// get current xp
+const getCurrentXP = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const currentXP = await statsModel.getCurrentXP(userId);
+        res.status(200).json({ message: 'Current XP retrieved successfully', data: currentXP });
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving current XP', error: error.message });
+    }
+};
+
+// get next level threshold
+const getNextLevelThreshold = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const currentLevel = await statsModel.getCurrentLevel(userId);
+        const nextLevelThreshold = await statsModel.getNextLevelThreshold(currentLevel);
+        res.status(200).json({ message: 'Next level threshold retrieved successfully', data: nextLevelThreshold });
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving next level threshold', error: error.message });
+    }
+};
+
+
 
 
 module.exports = {
     getStatistics,
     getCurrentStreak,
+    getCurrentLevel,
+    getCurrentXP,
+    getNextLevelThreshold
 };
