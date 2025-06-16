@@ -216,6 +216,28 @@ const getNextLevelThreshold = async (currentLevel) => {
     }
 };
 
+// get next level and level name
+const getNextLevelAndName = async (currentLevel) => {
+    try {
+        const query = `
+            SELECT level, level_name, xp_required
+            FROM "LevelThresholds"
+            WHERE level = $1;
+        `;
+        const result = await db.query(query, [currentLevel + 1]); // Fetch next level
+        console.log(`Next level query result for level ${currentLevel + 1}:`, result.rows); // Debugging        
+        if (result.rows.length === 0) {
+            throw new Error('Next level not found');
+        }   
+        const { level, level_name, xp_required } = result.rows[0];
+        return { nextLevel: level, levelName: level_name, xpRequired: xp_required };
+    } catch (error) {
+        console.error(`Error retrieving next level and name for level ${currentLevel}:`, error.message
+        );
+        throw error;
+    }
+};
+
 // update the current level and XP in the Stats table
 const updateXPAndLevel = async (userId, xpEarned) => {
     try {
@@ -283,5 +305,6 @@ module.exports = {
     getCurrentLevel,
     getCurrentXP,
     getNextLevelThreshold,
+    getNextLevelAndName,
     updateXPAndLevel
 };

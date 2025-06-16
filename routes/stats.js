@@ -16,5 +16,7 @@ router.get('/level', authMiddleware, statsController.getCurrentLevel);
 router.get('/xp', authMiddleware, statsController.getCurrentXP);
 // Route to fetch next level threshold  
 router.get('/nextLevel', authMiddleware, statsController.getNextLevelThreshold);
+// Route to fetch next level and name
+router.get('/nextLevelName', authMiddleware, statsController.getNextLevelName);
 
 module.exports = router;

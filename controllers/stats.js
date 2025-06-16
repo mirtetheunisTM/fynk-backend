@@ -106,6 +106,26 @@ const getNextLevelThreshold = async (req, res) => {
     }
 };
 
+// get next level and name
+const getNextLevelName = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Fetch current level
+        const { currentLevel } = await statsModel.getCurrentLevel(userId); // Extract currentLevel
+        console.log(`Current level for user ${userId}:`, currentLevel); // Debugging
+
+        // Fetch next level name
+        const nextLevelName = await statsModel.getNextLevelAndName(currentLevel); // Pass only the integer
+        console.log(`Next level name for level ${currentLevel}:`, nextLevelName); // Debugging
+
+        res.status(200).json({ message: 'Next level name retrieved successfully', data: nextLevelName });
+    } catch (error) {
+        console.error(`Error retrieving next level name for user ${userId}:`, error.message); // Debugging
+        res.status(500).json({ message: 'Error retrieving next level name', error: error.message });
+    }
+};
+
 
 
 
@@ -114,5 +134,6 @@ module.exports = {
     getCurrentStreak,
     getCurrentLevel,
     getCurrentXP,
-    getNextLevelThreshold
+    getNextLevelThreshold,
+    getNextLevelName
 };
