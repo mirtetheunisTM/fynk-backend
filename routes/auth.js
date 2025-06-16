@@ -16,8 +16,8 @@ router.post('/logout', authController.logout);
 router.post('/changePassword', authMiddleware, authController.changePassword);
 router.delete('/deleteAccount', authMiddleware, authController.deleteAccount);
 router.put('/updateAccount', authMiddleware, authController.updateAccount);
-router.get('/users/:id', authMiddleware, authController.findUserById);
-router.get('/users/email/:email', authMiddleware, authController.findUserByEmail);
+router.get('/users/:id', authMiddleware, authController.getUserById);
+router.get('/users/email/:email', authMiddleware, authController.getUserByEmail);
 
 // Admin route to get active users
 // Nog extra check for admin role to be implemented

@@ -147,7 +147,7 @@ const updateAccount = async (req, res) => {
 const getUserById = async (req, res) => {
     try {
         const userId = req.params.id;
-        const user = await userModel.getUserById(userId);
+        const user = await userModel.findUserById(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -161,7 +161,7 @@ const getUserById = async (req, res) => {
 const getUserByEmail = async (req, res) => {
     try {
         const email = req.params.email;
-        const user = await userModel.getUserByEmail(email);
+        const user = await userModel.findUserByEmail(email);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
