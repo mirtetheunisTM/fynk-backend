@@ -195,7 +195,7 @@ const getCurrentXP = async (userId) => {
         SELECT current_xp FROM "Stats" WHERE user_id = $1;
     `;
     const result = await db.query(query, [userId]);
-    return result.rows[0]?.xp || 0; // Default to 0 if not found
+    return result.rows[0]?.current_xp || 0; // Default to 0 if not found
 };
 
 // get xp required for NEXT level
