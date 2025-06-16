@@ -199,17 +199,21 @@ const getCurrentXP = async (userId) => {
 };
 
 // get xp required for NEXT level
-const getNextLevelThreshold = (level) => {
-    // fetch from  LevelThresholds table
-    const query = `
-        SELECT xp_required FROM "LevelThresholds" WHERE level = $1;
-    `;
-    return db.query(query, [level])
-        .then(result => result.rows[0]?.xp_threshold || 0) // Default to 0 if not found
-        .catch(err => {
-            console.error('Error fetching next level threshold:', err);
-            return 0; // Default to 0 on error
-        });
+const getNextLevelThreshold = async (currentLevel) => {
+    try {
+        const query = `
+            SELECT xp_required
+            FROM "LevelThresholds"
+            WHERE level = $1;
+        `;
+        const result = await db.query(query, [currentLevel + 1]); // Fetch next level
+        console.log(`Next level threshold query result for level ${currentLevel + 1}:`, result.rows); // Debugging
+
+        return result.rows[0]?.xp_required || null; // Return XP threshold or null if undefined
+    } catch (error) {
+        console.error(`Error retrieving next level threshold for level ${currentLevel}:`, error.message);
+        throw error;
+    }
 };
 
 // update the current level and XP in the Stats table

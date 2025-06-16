@@ -90,10 +90,18 @@ const getCurrentXP = async (req, res) => {
 const getNextLevelThreshold = async (req, res) => {
     try {
         const userId = req.user.id;
-        const currentLevel = await statsModel.getCurrentLevel(userId);
-        const nextLevelThreshold = await statsModel.getNextLevelThreshold(currentLevel);
+
+        // Fetch current level
+        const { currentLevel } = await statsModel.getCurrentLevel(userId); // Extract currentLevel
+        console.log(`Current level for user ${userId}:`, currentLevel); // Debugging
+
+        // Fetch next level threshold
+        const nextLevelThreshold = await statsModel.getNextLevelThreshold(currentLevel); // Pass only the integer
+        console.log(`Next level threshold for level ${currentLevel}:`, nextLevelThreshold); // Debugging
+
         res.status(200).json({ message: 'Next level threshold retrieved successfully', data: nextLevelThreshold });
     } catch (error) {
+        console.error(`Error retrieving next level threshold for user ${userId}:`, error.message); // Debugging
         res.status(500).json({ message: 'Error retrieving next level threshold', error: error.message });
     }
 };
