@@ -71,30 +71,31 @@ const finishSession = async (req, res) => {
         const session_id = req.params.id;
         const { end_time, successful, rating } = req.body;
 
-        // Haal de sessie op om start_time te weten (voor duration)
         const session = await sessionModel.getSessionById(session_id);
         if (!session) {
             return res.status(404).json({ message: 'Session not found' });
         }
 
-        // Bepaal end_time en duration
         const endTime = end_time ? new Date(end_time) : new Date();
         const startTime = new Date(session.start_time);
+
+        console.log(`Start Time: ${startTime}`);
+        console.log(`End Time: ${endTime}`);
+
         const duration = Math.ceil((endTime - startTime) / 60000); // in minutes
-        // calculate xp earned
+        console.log(`Calculated Duration: ${duration}`);
+
         const xpEarned = await sessionModel.calculateXPEarned(session_id);
 
-        // Update de sessie
         const updates = {
             end_time: endTime,
             duration,
             successful,
             rating,
-            xp_earned: xpEarned
+            xp_earned: xpEarned,
         };
         const updatedSession = await sessionModel.updateSessionById(session_id, updates);
 
-        // update user stats
         const userId = req.user.id;
         await statsModel.updateXPAndLevel(userId, xpEarned);
 

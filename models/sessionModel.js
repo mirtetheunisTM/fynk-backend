@@ -154,6 +154,7 @@ const calculateXPEarned = async (sessionId) => {
         // Calculate XP earned
         const xpEarned = duration * xp_multiplier;
 
+        console.log(`XP Earned for session ${sessionId}:`, xpEarned); // Debugging
         return xpEarned;
     } catch (error) {
         console.error('Error calculating XP:', error.message);
