@@ -168,11 +168,25 @@ const sessionsCompleted = async (userId) => {
 // Level and XP system
 // get current level
 const getCurrentLevel = async (userId) => {
-    const query = `
-        SELECT current_level FROM "Stats" WHERE user_id = $1;
-    `;
-    const result = await db.query(query, [userId]);
-    return result.rows[0]?.level || 1; // Default to level 1 if not found
+    try {
+        const query = `
+            SELECT s.current_level, lt.level_name
+            FROM "Stats" s
+            JOIN "LevelThresholds" lt ON s.current_level = lt.level
+            WHERE s.user_id = $1;
+        `;
+        const result = await db.query(query, [userId]);
+
+        if (result.rows.length === 0) {
+            throw new Error('User stats not found');
+        }
+
+        const { current_level, level_name } = result.rows[0];
+        return { currentLevel: current_level, levelName: level_name };
+    } catch (error) {
+        console.error('Error retrieving current level:', error.message);
+        throw error;
+    }
 };
 
 // get current XP
